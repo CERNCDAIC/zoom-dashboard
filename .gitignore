@@ -1,0 +1,7 @@
+venv
+*.log
+/results/*
+__pycache__
+.idea
+config.py
+.vscode

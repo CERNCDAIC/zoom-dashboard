@@ -1,0 +1,1 @@
+Delete bulk for Zoom accounts
