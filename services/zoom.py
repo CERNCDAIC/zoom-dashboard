@@ -131,7 +131,7 @@ def live_events(meeting, interval, past, start_date, debug):
                 "sum3partyaudio": sum3partyaudio,
                 "sumscreenshare": sumscreenshare,
                 "sumrecording": sumrecording,
-                "sumip": sumsip,
+                "sumsip": sumsip,
                 "sumvideo": sumvideo,
                 "start_time": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
             }
@@ -169,6 +169,9 @@ def live_events(meeting, interval, past, start_date, debug):
                             participant['meeting'] = 1
                         else:
                             participant['webinar'] =1    
+                        if "join_time" in participant and "leave_time" in participant:
+                            participant['duration'] = (datetime.datetime.strptime(participant["leave_time"], "%Y-%m-%dT%H:%M:%SZ") - \
+                                datetime.datetime.strptime(participant["join_time"], "%Y-%m-%dT%H:%M:%SZ")).total_seconds()
                         logger3.info(json.dumps(participant))
                     arrparticipants.append(item['uuid'])
                     if debug:
