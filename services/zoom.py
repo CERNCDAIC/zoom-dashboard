@@ -45,9 +45,9 @@ def _get_live_events(zoom, meeting, data):
                 res = zoom.list_meetings(**data)
                 events.extend(res["webinars"])
                 counter += 1
-    except requests.HTTPError as ex:
-        time.sleep(60)
+    except requests.exceptions.HTTPError as ex: 
         logger.warn(ex)
+        time.sleep(60)
         events=None                    
     return events
 
@@ -61,7 +61,7 @@ def _get_live_events(zoom, meeting, data):
 @with_appcontext
 def live_events(meeting, interval, past, start_date, debug):
     """
-    Command to delete a bulk of Zoom accounts passed by a file
+    Command to retrieve events and participants from Zoom 
     """
     logger.info("Starting script")
     zoomapi = ZoomAPIClient(ZOOM_API_CLIENT, ZOOM_API_SECRET, ZOOM_BASE_URL)
@@ -97,17 +97,17 @@ def live_events(meeting, interval, past, start_date, debug):
     else:
         logger2 = helper.getFileLogger("zoom-webinars-past.log", 'webinar-past')
         arrids = helper.readFileArray("zoom-webinars-past.log")
-        logger3 = helper.getFileLogger("zoom-meetings-pasticipants.log", 'webinar-participants-past')
-        arrparticipants = helper.readFileArray("zoom-meetings-pasticipants.log")
+        logger3 = helper.getFileLogger("zoom-webinars-pasticipants.log", 'webinar-participants-past')
+        arrparticipants = helper.readFileArray("zoom-webinars-pasticipants.log")
 
     while True: 
         if not start_date:
             data["from"] = datetime.date.today().strftime("%Y-%m-%d")
             data["to"] = datetime.date.today().strftime("%Y-%m-%d")
         time.sleep(interval * 60)
-        ret = _get_live_events(zoomapi, meeting, data=data)
+        ret = _get_live_events(zoomapi, meeting, data=data.copy())
         if ret == None:
-            logger.info("No values return in this iteration. HTTP Exception")
+            logger.warn("No values return in this iteration. HTTP Exception")
             continue
         if len(ret)==0 and interval > 0:
             logger.info("No values return in this iteration")
@@ -155,6 +155,9 @@ def live_events(meeting, interval, past, start_date, debug):
                         logger.info(json.dumps(item))
                 if item['uuid'] not in arrparticipants:
                     ret2 = _get_past_participants_simplified(zoomapi, meeting, item['uuid'])
+                    if ret2 == None:
+                        logger.warn("No values return in this iteration for participants for uuid: {}".format(item['uuid']))
+                        continue
                     for participant in ret2:
                         participant['uuid'] = item['uuid']
                         if 'zoomid' in item:
@@ -189,9 +192,12 @@ def _get_past_participants_simplified(zoom, meeting, uuid):
     """
     data = {
         'type': 'past',
-        'page_size': 300,
-        'meeting_id': uuid
+        'page_size': 300
     }
+    if meeting:
+        data['meeting_id'] = uuid
+    else:
+        data['webinarId'] = uuid   
     return _get_past_participants(zoom, meeting, data)
 
 def _get_past_participants(zoom, meeting, data):
@@ -199,18 +205,37 @@ def _get_past_participants(zoom, meeting, data):
     Iteration to retrieve all participants in a event
     """
     events = []
-    if meeting:
-        res = zoom.list_participants_meeting(**data)
-        events = res["participants"]
-        counter = 1
-        while res["next_page_token"] != '':
-            if counter > 9:
-                counter = 1
-                time.sleep(60)
-            data["next_page_token"] = res["next_page_token"]
+    try: 
+        if meeting:
             res = zoom.list_participants_meeting(**data)
-            events.extend(res["participants"])
-            counter += 1
+            events = res["participants"]
+            counter = 1
+            while res["next_page_token"] != '':
+                if counter > 9:
+                    counter = 1
+                    time.sleep(60)
+                data["next_page_token"] = res["next_page_token"]
+                res = zoom.list_participants_meeting(**data)
+                events.extend(res["participants"])
+                counter += 1
+        else:
+            res = zoom.list_participants_webinar(**data)
+            events = res["participants"]
+            counter = 1
+            while res["next_page_token"] != '':
+                if counter > 9:
+                    counter = 1
+                    time.sleep(60)
+                data["next_page_token"] = res["next_page_token"]
+                res = zoom.list_participants_webinar(**data)
+                events.extend(res["participants"])
+                counter += 1
+    except requests.exceptions.HTTPError as ex:
+        if ex.errno == 404:
+            logger.warn("{} {} is not over?".format('meeting' if meeting else 'webinar', data['meeting_id'] if meeting else data['webinarId']))
+        logger.warn(ex)
+        events=None 
+        time.sleep(60)       
     return events
 
 @click.command()
@@ -225,12 +250,16 @@ def past_participants(dry, meeting, interval, eventuuid):
     """
     logger.info("Starting script")
 
-    zoomapi = ZoomAPIClient(ZOOM_API_CLIENT, ZOOM_API_SECRET, ZOOM_BASE_URL)
     data = {
         'type': 'past',
-        'page_size': 300,
-        'meeting_id': eventuuid
+        'page_size': 300
     }
+    
+    zoomapi = ZoomAPIClient(ZOOM_API_CLIENT, ZOOM_API_SECRET, ZOOM_BASE_URL)
+    if meeting:
+        data['meeting_id'] = eventuuid
+    else:
+        data['webinarId'] =eventuuid
     
     print(data)
 

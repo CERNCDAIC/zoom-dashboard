@@ -114,9 +114,10 @@ class MetricsComponent(BaseComponent):
 
     def list_participants_meeting(self, **kwargs):
         _require_keys(kwargs, "meeting_id")
-        kwargs["meeting_id"] = _encode_uuid(kwargs.get("meeting_id"))
+        meeting_id = _encode_uuid(kwargs.get("meeting_id"))
+        kwargs.pop('meeting_id', None)
         return self.session.get(
-            "{}/metrics/meetings/{}/participants".format(self.base_uri, kwargs.get("meeting_id")),
+            "{}/metrics/meetings/{}/participants".format(self.base_uri, meeting_id),
             params=kwargs,
         )
     
@@ -132,9 +133,10 @@ class MetricsComponent(BaseComponent):
 
     def list_participants_webinar(self, **kwargs):
         _require_keys(kwargs, "webinarId")
-        kwargs["webinarId"] = _encode_uuid(kwargs.get("webinarId"))
+        webinarId = _encode_uuid(kwargs.get("webinarId"))
+        kwargs.pop('webinarId', None)
         return self.session.get(
-            "{}/metrics/webinars/{}/participants".format(self.base_uri, kwargs.get("webinarId")),
+            "{}/metrics/webinars/{}/participants".format(self.base_uri, webinarId),
             params=kwargs,
         )
 
