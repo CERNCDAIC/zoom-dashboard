@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  filebeat:
+    image: docker.elastic.co/beats/filebeat:7.10.0
+    command: filebeat -e -strict.perms=false 
+    volumes:
+      - /Users/rgaspar/gitprojects/zoom-dashboard/filebeat.yml:/usr/share/filebeat/filebeat.yml:ro 
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro 
+      - /var/run/docker.sock:/var/run/docker.sock:ro 
+      - /private/var/log/zoom-dashboard:/var/log/zoom-dashboard
+  zoom-dashboard:
+    image: zoom-dashboard:1.0
+    command: /app/dispatch_collectors.sh
+    environment:
+      FLASK_APP: /app/app.py
+    volumes:
+      - /private/var/log/zoom-dashboard:/var/log/zoom-dashboard
+      - /Users/rgaspar/gitprojects/zoom-dashboard/config.py:/app/config.py:ro

@@ -2,6 +2,9 @@ from datetime import datetime
 import logging
 from pytz import timezone, utc
 import sys
+import os
+
+from config import LOG_DIR
 
 
 def zurich_time(*args):
@@ -60,8 +63,8 @@ def configure_stdout_logging(logger=None, formatter=None, log_level="DEV"):
 
 
 def configure_file_logging(logger=None, formatter=None):
-    handler = logging.FileHandler('error.log')
-
+    handler = logging.handlers.TimedRotatingFileHandler(os.path.join(LOG_DIR, 'error.log'), when='midnight', backupCount=20)
+        
     handler.setFormatter(formatter)
     handler.setLevel(logging.WARN)
 
