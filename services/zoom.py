@@ -4,6 +4,7 @@ import os
 import time
 import json
 import re
+import sys
 
 import requests
 import click
@@ -46,9 +47,13 @@ def _get_live_events(zoom, meeting, data):
                 events.extend(res["webinars"])
                 counter += 1
     except requests.exceptions.HTTPError as ex: 
-        logger.warn(ex)
+        logger.error(ex)
         time.sleep(60)
-        events=None                    
+        events=None  
+    except:
+        logger.error("Unexpected exception: {}".format(sys.exc_info()[0]))  
+        time.sleep(60)
+        events=None                  
     return events
 
 
@@ -77,10 +82,10 @@ def live_events(meeting, interval, past, start_date, debug):
             data["from"] = start_date
             data["to"] = start_date
     else:
-        data["from"] = datetime.date.today().strftime("%Y-%m-%d")
+        data["from"] = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d") 
         data["to"] = datetime.date.today().strftime("%Y-%m-%d")
     
-    print(data)
+    if debug: logger.debug(data)
     logger2 = None
     logger3 = None
     arrids = []
@@ -100,10 +105,18 @@ def live_events(meeting, interval, past, start_date, debug):
         logger3 = helper.getFileLogger("zoom-webinars-pasticipants.log", 'webinar-participants-past')
         arrparticipants = helper.readFileArray("zoom-webinars-pasticipants.log")
 
-    while True: 
+    while True:
+        if debug:
+            logger.debug("length of elements in array: {}".format(len(arrids)))
+        arrids = helper.cleanArr(arrids) 
+        arrparticipants = helper.cleanArr(arrparticipants)
+        if debug:
+            logger.debug("length of elements in array after cleanup: {}".format(len(arrids)))
         if not start_date:
-            data["from"] = datetime.date.today().strftime("%Y-%m-%d")
+            data["from"] = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d") 
             data["to"] = datetime.date.today().strftime("%Y-%m-%d")
+
+        print(data)
         time.sleep(interval * 60)
         ret = _get_live_events(zoomapi, meeting, data=data.copy())
         if ret == None:
@@ -149,11 +162,11 @@ def live_events(meeting, interval, past, start_date, debug):
                         item['webinar'] = 1    
                     item['zoomid'] = item.pop('id')    
                     logger2.info(json.dumps(item))
-                    arrids.append(item['uuid'])
+                    arrids[item['uuid']] = item['start_time']
                     if debug:
-                        logger.info("{} added".format(item['uuid']))
+                        logger.info("{} added to meetings".format(item['uuid']))
                         logger.info(json.dumps(item))
-                if item['uuid'] not in arrparticipants:
+                if item['uuid'] not in arrparticipants and helper.timeDiffinMinutes(item['end_time']) >= 180:
                     ret2 = _get_past_participants_simplified(zoomapi, meeting, item['uuid'])
                     if ret2 == None:
                         logger.warn("No values return in this iteration for participants for uuid: {}".format(item['uuid']))
@@ -176,7 +189,7 @@ def live_events(meeting, interval, past, start_date, debug):
                             participant['duration'] = (datetime.datetime.strptime(participant["leave_time"], "%Y-%m-%dT%H:%M:%SZ") - \
                                 datetime.datetime.strptime(participant["join_time"], "%Y-%m-%dT%H:%M:%SZ")).total_seconds()
                         logger3.info(json.dumps(participant))
-                    arrparticipants.append(item['uuid'])
+                    arrparticipants[item['uuid']] = item['start_time']
                     if debug:
                         logger.info("{} added to participants".format(item['uuid']))
 

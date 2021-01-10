@@ -1,0 +1,88 @@
+apiVersion: storage.k8s.io/v1beta1
+kind: StorageClass
+metadata:
+  name: manila-cephfs-share
+provisioner: manila-provisioner
+parameters:
+  type: "Meyrin CephFS"
+  zones: nova
+  osSecretName: os-trustee
+  osSecretNamespace: kube-system
+  protocol: CEPHFS
+  backend: csi-cephfs
+  csi-driver: cephfs.csi.ceph.com
+  osShareID: b95794bf-cf66-4dcc-bdad-0daf86e3f8ca
+  osShareAccessID: 03f46e87-cf4e-41dc-abf2-b0aa2d4d4a2e
+reclaimPolicy: Retain
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: manila-cephfs-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100G
+  storageClassName: manila-cephfs-share
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zoom-dashboard
+spec:
+  selector:
+    matchLabels:
+      app: zoom-dashboard
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: zoom-dashboard
+    spec:
+      containers:
+      - name: filebeats
+        image: docker.elastic.co/beats/filebeat:7.10.0
+        command: ["filebeat", "-e", "-strict.perms=false", "-c", "/etc/zoom-dashboard/filebeat.yml"]
+        volumeMounts:
+          - mountPath: /etc/grid-security
+            name: etc-grid-security
+          - mountPath: /var/log/zoom-dashboard
+            name: zoomdata
+          - mountPath: /etc/zoom-dashboard/filebeat.yml
+            subPath: filebeat.yml
+            name: filebeat-config
+            readOnly: true    
+      - name: zoom-dashboard
+        image: gitlab-registry.cern.ch/videoconference/zoom-dashboard:latest
+        command: ["/app/dispatch_collectors.sh"]
+        volumeMounts:
+          - mountPath: /var/log/zoom-dashboard
+            name: zoomdata
+          - mountPath: /app/config.py
+            subPath: config.py
+            name: config-py-config
+            readOnly: true
+      volumes: 
+      - name: etc-grid-security
+        hostPath:
+          path: /etc/grid-security
+      - name: zoomdata
+        persistentVolumeClaim:
+          claimName: manila-cephfs-pvc
+          readOnly: false
+      - name: config-py-config
+        configMap:
+          name: config-py-config
+          items:
+          - key: config.py
+            path: config.py
+      - name: filebeat-config
+        configMap:
+          name: filebeat-config
+          items:
+            - key: filebeat.yml
+              path: filebeat.yml 
+      imagePullSecrets:
+      - name: regcred
