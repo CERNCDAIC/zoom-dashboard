@@ -5,6 +5,7 @@ import time
 import json
 import re
 import sys
+import traceback
 
 import requests
 import click
@@ -51,7 +52,7 @@ def _get_live_events(zoom, meeting, data):
         time.sleep(60)
         events=None  
     except:
-        logger.error("Unexpected exception: {}".format(sys.exc_info()[0]))  
+        logger.error("Unexpected exception: {}".format(traceback.format_exc()))  
         time.sleep(60)
         events=None                  
     return events
@@ -77,15 +78,7 @@ def live_events(meeting, interval, past, start_date, debug):
         'type': typeofevent,
         'page_size': 300
     }
-    if start_date:
-        if re.match(r'\d{4}-\d{2}-\d{2}', start_date):
-            data["from"] = start_date
-            data["to"] = start_date
-    else:
-        data["from"] = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d") 
-        data["to"] = datetime.date.today().strftime("%Y-%m-%d")
     
-    if debug: logger.debug(data)
     logger2 = None
     logger3 = None
     arrids = []
@@ -106,17 +99,24 @@ def live_events(meeting, interval, past, start_date, debug):
         arrparticipants = helper.readFileArray("zoom-webinars-pasticipants.log")
 
     while True:
-        if debug:
-            logger.debug("length of elements in array: {}".format(len(arrids)))
-        arrids = helper.cleanArr(arrids) 
-        arrparticipants = helper.cleanArr(arrparticipants)
-        if debug:
-            logger.debug("length of elements in array after cleanup: {}".format(len(arrids)))
-        if not start_date:
-            data["from"] = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d") 
+        if start_date:
+            if re.match(r'\d{4}-\d{2}-\d{2}', start_date):
+                data["from"] = start_date
+                data["to"] = start_date
+        else:
+            if past:
+                data["from"] = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d") 
+            else:
+                check = datetime.datetime.now()
+                total_minutes = check.hour * 60 + check.minute
+                # if just three hours in the new day lets consider yesterday meetings if any
+                if total_minutes < 180:
+                    data["from"] = (datetime.date.today() - datetime.timedelta(days=1)).strftime("%Y-%m-%d")
+                else:    
+                    data["from"] = datetime.date.today().strftime("%Y-%m-%d") 
             data["to"] = datetime.date.today().strftime("%Y-%m-%d")
-
-        print(data)
+        
+        if debug: logger.debug(data)
         time.sleep(interval * 60)
         ret = _get_live_events(zoomapi, meeting, data=data.copy())
         if ret == None:
@@ -152,6 +152,13 @@ def live_events(meeting, interval, past, start_date, debug):
             if debug:
                 logger.info("Total: {} : {}".format('meeting' if meeting else 'webinar', livejson))
         else:
+            if debug:
+                logger.debug("length of elements in array: {}".format(len(arrids)))
+            arrids = helper.cleanArr(arrids) 
+            arrparticipants = helper.cleanArr(arrparticipants)
+            if debug:
+                logger.debug("length of elements in array after cleanup: {}".format(len(arrids)))
+
             for item in ret:
                 if 'duration' in item:
                     item['duration'] = helper.convertStrToSec(item['duration'])

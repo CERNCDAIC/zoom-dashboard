@@ -41,6 +41,8 @@ spec:
       labels:
         app: zoom-dashboard
     spec:
+      securityContext:
+        runAsUser: 0
       containers:
       - name: filebeats
         image: docker.elastic.co/beats/filebeat:7.10.0
@@ -53,7 +55,11 @@ spec:
           - mountPath: /etc/zoom-dashboard/filebeat.yml
             subPath: filebeat.yml
             name: filebeat-config
-            readOnly: true    
+            readOnly: true  
+          - mountPath: /etc/grid-security/Grid_CA_certificate.pem
+            subPath: Grid_CA_certificate.pem
+            name: gridcacert
+            readOnly: true 
       - name: zoom-dashboard
         image: gitlab-registry.cern.ch/videoconference/zoom-dashboard:latest
         command: ["/app/dispatch_collectors.sh"]
@@ -84,5 +90,11 @@ spec:
           items:
             - key: filebeat.yml
               path: filebeat.yml 
+      - name: gridcacert
+        configMap:
+          name: gridcacert
+          items:
+            - key: Grid_CA_certificate.pem
+              path: Grid_CA_certificate.pem
       imagePullSecrets:
       - name: regcred

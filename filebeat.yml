@@ -23,7 +23,7 @@ filebeat.inputs:
   exclude_lines: ["^#"]
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
-    - /var/log/zoom-dashboard/zoom-*pasticipants.log
+    - /var/log/zoom-dashboard/zoom-*pasticipants.log*
   fields:  
     document_type: zparticipants 
 
@@ -35,7 +35,7 @@ filebeat.inputs:
   exclude_lines: ["^#"]
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
-    - /var/log/zoom-dashboard/zoom-*live.log
+    - /var/log/zoom-dashboard/zoom-*live.log*
   fields:  
     document_type: aggrzeventslive
 
@@ -47,7 +47,7 @@ filebeat.inputs:
   exclude_lines: ["^#"]
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
-    - /var/log/zoom-dashboard/zoom-*past.log
+    - /var/log/zoom-dashboard/zoom-*past.log*
   fields:  
     document_type: zeventspast
 
@@ -122,17 +122,17 @@ filebeat.inputs:
 #----------------------------- Logstash output --------------------------------
 output.logstash:
   # The Logstash hosts
-  hosts: ["logstash01-qaicapps.cern.ch:5084"]
+  hosts: ["logstash-icapps.cern.ch:5084"]
 
   # Optional SSL. By default is off.
   # List of root certificates for HTTPS server verifications
-  #ssl.certificate_authorities: ["/etc/pki/root/ca.pem"]
+  ssl.certificate_authorities: ["/etc/grid-security/Grid_CA_certificate.pem"]
 
   # Certificate for SSL client authentication
-  #ssl.certificate: 'C:\ProgramData\PuppetLabs\puppet\etc\ssl\certs\doconv01-test.cern.ch.pem'
+  ssl.certificate: '/etc/grid-security/hostcert.pem'
 
   # Client Certificate Key
-  #ssl.key: 'C:\ProgramData\PuppetLabs\puppet\etc\ssl\private_keys\doconv01-test.key'
+  ssl.key: '/etc/grid-security/hostkey.pem'
   #insecure: true
 
 #================================ Logging =====================================
@@ -146,7 +146,7 @@ output.logstash:
 # "publish", "service".
 #logging.selectors: ["*"]
 
-logging.level: debug
+logging.level: info
 logging.to_files: true
 logging.files:
   path: /var/log/zoom-dashboard

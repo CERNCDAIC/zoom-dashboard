@@ -9,7 +9,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro 
       - /private/var/log/zoom-dashboard:/var/log/zoom-dashboard
   zoom-dashboard:
-    image: zoom-dashboard:1.0
+    image: zoom-dashboard:latest
     command: /app/dispatch_collectors.sh
     environment:
       FLASK_APP: /app/app.py
