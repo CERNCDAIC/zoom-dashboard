@@ -16,11 +16,12 @@ filebeat.inputs:
 # Below are the prospector specific configurations.
 
 - type: log
-  ignore_older: 72h
+  ignore_older: 0
   close_inactive: 5m
   close_renamed: true
   close_removed: true
   exclude_lines: ["^#"]
+  clean_removed: true
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
     - /var/log/zoom-dashboard/zoom-*pasticipants.log*
@@ -33,6 +34,7 @@ filebeat.inputs:
   close_renamed: true
   close_removed: true
   exclude_lines: ["^#"]
+  clean_removed: true
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
     - /var/log/zoom-dashboard/zoom-*live.log*
@@ -40,11 +42,12 @@ filebeat.inputs:
     document_type: aggrzeventslive
 
 - type: log
-  ignore_older: 72h
+  ignore_older: 0
   close_inactive: 5m
   close_renamed: true
   close_removed: true
   exclude_lines: ["^#"]
+  clean_removed: true
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
     - /var/log/zoom-dashboard/zoom-*past.log*
@@ -153,3 +156,7 @@ logging.files:
   name: filebeat
   keepfiles: 7
   permissions: 0644
+
+#========================= Filebeat global options ============================
+
+filebeat.registry.path: /var/log/zoom-dashboard/registry
