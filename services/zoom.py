@@ -150,7 +150,29 @@ def live_events(meeting, interval, past, start_date, debug):
             }
             logger2.info(json.dumps(livejson))
             if debug:
-                logger.info("Total: {} : {}".format('meeting' if meeting else 'webinar', livejson))
+                logger.info("Event: {} : {}".format('meeting' if meeting else 'webinar', livejson))
+            
+            for item in ret: 
+                if item["participants"] == 1:
+                    continue
+                livejson = {
+                    "type": 'meeting' if meeting else 'webinar',
+                    "participants": item["participants"],
+                    "uuid": item["uuid"],
+                    "zoomid": item["id"],
+                    "topic": item["topic"],
+                    "has_pstn": 1 if item['has_pstn'] else 0,
+                    "has_voip": 1 if item['has_voip'] else 0,
+                    "has_3partyaudio": 1 if item['has_3rd_party_audio'] else 0,
+                    "has_screenshare": 1 if item['has_screen_share'] else 0,
+                    "has_recording": 1 if item['has_recording'] else 0,
+                    "has_sip": 1 if item['has_sip'] else 0,
+                    "has_video": 1 if item['has_video'] else 0,
+                    "start_time": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+                }
+                logger2.info(json.dumps(livejson))
+                if debug:
+                    logger.info("Event {} : {}".format('meeting' if meeting else 'webinar', livejson))   
         else:
             if debug:
                 logger.debug("length of elements in array: {}".format(len(arrids)))
