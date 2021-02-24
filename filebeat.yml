@@ -21,7 +21,7 @@ filebeat.inputs:
   close_renamed: true
   close_removed: true
   exclude_lines: ["^#"]
-  clean_removed: true
+  clean_removed: false
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
     - /var/log/zoom-dashboard/zoom-*pasticipants.log*
@@ -34,7 +34,7 @@ filebeat.inputs:
   close_renamed: true
   close_removed: true
   exclude_lines: ["^#"]
-  clean_removed: true
+  clean_removed: false
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
     - /var/log/zoom-dashboard/zoom-*live.log*
@@ -47,7 +47,7 @@ filebeat.inputs:
   close_renamed: true
   close_removed: true
   exclude_lines: ["^#"]
-  clean_removed: true
+  clean_removed: false
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
     - /var/log/zoom-dashboard/zoom-*past.log*
