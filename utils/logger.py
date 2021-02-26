@@ -63,7 +63,7 @@ def configure_stdout_logging(logger=None, formatter=None, log_level="DEV"):
 
 
 def configure_file_logging(logger=None, formatter=None):
-    handler = logging.handlers.TimedRotatingFileHandler(os.path.join(LOG_DIR, 'error.log'), when='midnight', backupCount=20)
+    handler = logging.handlers.TimedRotatingFileHandler(os.path.join(LOG_DIR, 'error.log'), when='midnight', backupCount=60)
         
     handler.setFormatter(formatter)
     handler.setLevel(logging.WARN)

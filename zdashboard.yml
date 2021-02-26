@@ -11,8 +11,8 @@ parameters:
   protocol: CEPHFS
   backend: csi-cephfs
   csi-driver: cephfs.csi.ceph.com
-  osShareID: b95794bf-cf66-4dcc-bdad-0daf86e3f8ca
-  osShareAccessID: 03f46e87-cf4e-41dc-abf2-b0aa2d4d4a2e
+  osShareID: b9XXX94bf-XXX-4dcc-XXX-0daf8XXXXXca
+  osShareAccessID: 03XXXX87-cf4e-41XX-XbX2-b0aaXXXXX2e
 reclaimPolicy: Retain
 ---
 kind: PersistentVolumeClaim
