@@ -176,8 +176,9 @@ def live_events(meeting, interval, past, start_date, debug):
         else:
             if debug:
                 logger.debug("length of elements in array: {}".format(len(arrids)))
-            arrids = helper.cleanArr(arrids) 
-            arrparticipants = helper.cleanArr(arrparticipants)
+            if not start_date:
+                arrids = helper.cleanArr(arrids) 
+                arrparticipants = helper.cleanArr(arrparticipants)
             if debug:
                 logger.debug("length of elements in array after cleanup: {}".format(len(arrids)))
 
@@ -189,7 +190,7 @@ def live_events(meeting, interval, past, start_date, debug):
                         item['meeting'] = 1
                     else:
                         item['webinar'] = 1    
-                    item['zoomid'] = item.pop('id')    
+                    item['zoomid'] = item.pop('id')  
                     logger2.info(json.dumps(item))
                     arrids[item['uuid']] = item['start_time']
                     if debug:
@@ -207,7 +208,8 @@ def live_events(meeting, interval, past, start_date, debug):
                         else: 
                             participant['zoomid'] = item['id']
                         if 'id' not in participant:
-                            participant['participantid'] = 'none'
+                            participant['participantidlocal'] = participant.pop('user_id')
+                            participant['participantid'] = None
                         else:    
                             participant['participantid'] = participant.pop('id')
                         if meeting:
