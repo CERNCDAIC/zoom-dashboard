@@ -16,7 +16,7 @@ filebeat.inputs:
 # Below are the prospector specific configurations.
 
 - type: log
-  ignore_older: 2h
+  ignore_older: 1h
   tail_files: true
   close_inactive: 5m
   close_renamed: true
@@ -30,7 +30,7 @@ filebeat.inputs:
     document_type: zparticipants 
 
 - type: log
-  ignore_older: 2h
+  ignore_older: 1h
   tail_files: true
   close_inactive: 5m
   close_renamed: true
@@ -44,7 +44,7 @@ filebeat.inputs:
     document_type: aggrzeventslive
 
 - type: log
-  ignore_older: 2h
+  ignore_older: 1h
   close_inactive: 5m
   close_renamed: true
   close_removed: true

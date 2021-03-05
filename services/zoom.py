@@ -208,7 +208,6 @@ def live_events(meeting, interval, past, start_date, debug):
                         else: 
                             participant['zoomid'] = item['id']
                         if 'id' not in participant:
-                            participant['participantidlocal'] = participant.pop('user_id')
                             participant['participantid'] = None
                         else:    
                             participant['participantid'] = participant.pop('id')

@@ -1,0 +1,84 @@
+apiVersion: storage.k8s.io/v1beta1
+kind: StorageClass
+metadata:
+  name: manila-cephfs-share
+provisioner: manila-provisioner
+parameters:
+  type: "Meyrin CephFS"
+  zones: nova
+  osSecretName: os-trustee
+  osSecretNamespace: kube-system
+  protocol: CEPHFS
+  backend: csi-cephfs
+  csi-driver: cephfs.csi.ceph.com
+  osShareID: b9XXXXf-cfX-4XXc-bXXd-0dXXXXXXca
+  osShareAccessID: 03XXXX7-cXXe-4XXc-aXX2-b0XXXXXXXe
+reclaimPolicy: Retain
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: manila-cephfs-pvc
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100G
+  storageClassName: manila-cephfs-share
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zoom-dashboard-filebeats
+spec:
+  selector:
+    matchLabels:
+      app: zoom-dashboard-filebeats
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: zoom-dashboard-filebeats
+    spec:
+      securityContext:
+        runAsUser: 0
+      containers:
+      - name: filebeats
+        image: docker.elastic.co/beats/filebeat:7.11.1
+        command: ["filebeat", "-e", "-strict.perms=false", "-c", "/etc/zoom-dashboard/filebeat.yml"]
+        volumeMounts:
+          - mountPath: /etc/grid-security
+            name: etc-grid-security
+          - mountPath: /var/log/zoom-dashboard
+            name: zoomdata
+          - mountPath: /etc/zoom-dashboard/filebeat.yml
+            subPath: filebeat.yml
+            name: filebeat-config
+            readOnly: true
+          - mountPath: /etc/grid-security/Grid_CA_certificate.pem
+            subPath: Grid_CA_certificate.pem
+            name: gridcacert
+            readOnly: true
+      volumes:
+      - name: etc-grid-security
+        hostPath:
+          path: /etc/grid-security
+      - name: zoomdata
+        persistentVolumeClaim:
+          claimName: manila-cephfs-pvc
+          readOnly: false
+      - name: filebeat-config
+        configMap:
+          name: filebeat-config
+          items:
+            - key: filebeat.yml
+              path: filebeat.yml
+      - name: gridcacert
+        configMap:
+          name: gridcacert
+          items:
+            - key: Grid_CA_certificate.pem
+              path: Grid_CA_certificate.pem
+      imagePullSecrets:
+      - name: regcred

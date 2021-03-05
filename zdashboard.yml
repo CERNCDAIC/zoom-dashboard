@@ -11,8 +11,8 @@ parameters:
   protocol: CEPHFS
   backend: csi-cephfs
   csi-driver: cephfs.csi.ceph.com
-  osShareID: b9XXX94bf-XXX-4dcc-XXX-0daf8XXXXXca
-  osShareAccessID: 03XXXX87-cf4e-41XX-XbX2-b0aaXXXXX2e
+  osShareID: b9XXXXf-cfXX-4Xcc-bdad-0dXXXXXXa
+  osShareAccessID: 03XXXX87-cXe-4Xc-aX2-b0XXXXXXXXXe
 reclaimPolicy: Retain
 ---
 kind: PersistentVolumeClaim
@@ -44,22 +44,6 @@ spec:
       securityContext:
         runAsUser: 0
       containers:
-      - name: filebeats
-        image: docker.elastic.co/beats/filebeat:7.10.0
-        command: ["filebeat", "-e", "-strict.perms=false", "-c", "/etc/zoom-dashboard/filebeat.yml"]
-        volumeMounts:
-          - mountPath: /etc/grid-security
-            name: etc-grid-security
-          - mountPath: /var/log/zoom-dashboard
-            name: zoomdata
-          - mountPath: /etc/zoom-dashboard/filebeat.yml
-            subPath: filebeat.yml
-            name: filebeat-config
-            readOnly: true  
-          - mountPath: /etc/grid-security/Grid_CA_certificate.pem
-            subPath: Grid_CA_certificate.pem
-            name: gridcacert
-            readOnly: true 
       - name: zoom-dashboard
         image: gitlab-registry.cern.ch/videoconference/zoom-dashboard:latest
         command: ["/app/dispatch_collectors.sh"]
@@ -70,10 +54,7 @@ spec:
             subPath: config.py
             name: config-py-config
             readOnly: true
-      volumes: 
-      - name: etc-grid-security
-        hostPath:
-          path: /etc/grid-security
+      volumes:
       - name: zoomdata
         persistentVolumeClaim:
           claimName: manila-cephfs-pvc
@@ -84,17 +65,5 @@ spec:
           items:
           - key: config.py
             path: config.py
-      - name: filebeat-config
-        configMap:
-          name: filebeat-config
-          items:
-            - key: filebeat.yml
-              path: filebeat.yml 
-      - name: gridcacert
-        configMap:
-          name: gridcacert
-          items:
-            - key: Grid_CA_certificate.pem
-              path: Grid_CA_certificate.pem
       imagePullSecrets:
       - name: regcred

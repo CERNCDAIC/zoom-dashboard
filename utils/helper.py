@@ -16,7 +16,7 @@ class helper:
         # set TimedRotatingFileHandler for root
         formatter = logging.Formatter('%(message)s')
         # use very short interval for this example, typical 'when' would be 'midnight' and no explicit interval
-        handler = logging.handlers.TimedRotatingFileHandler(os.path.join(LOG_DIR, log_file_name), when='midnight', backupCount=20)
+        handler = logging.handlers.TimedRotatingFileHandler(os.path.join(LOG_DIR, log_file_name), when='midnight', backupCount=60)
         handler.setFormatter(formatter)
         logger = logging.getLogger(logger_name) # or pass string to give it a name
         logger.addHandler(handler)
