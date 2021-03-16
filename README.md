@@ -33,4 +33,22 @@ docker push gitlab-registry.cern.ch/videoconference/zoom-dashboard
 
 ## Deploy on Kubernetes (only CERN)
 
-This note doesnt pretend to explain how Kubernetes works
+Deployment is done on the [Kubernetes infrastructure](https://clouddocs.web.cern.ch/containers/README.html) (authentication required) at CERN. So after setting the Openstack project and setting the environment for the Kubernetes cluster I do:
+
+```
+$ eval $(ai-rc "IT project")
+$ . ./env_zoom-dashboard.sh
+--further setup omitted 
+$ kubectl apply -f zoom-dashboard.yml
+$ kubectl apply -f zoom-dashboard-filebeats.yml
+```
+
+## Visualization on Kibana 
+
+Finally a set of dashboards has been produced e.g. view of the live statistics 
+
+![](./images/livedashboard.png)
+
+View of the location of attendees on a particular meeting:
+
+![](./images/geolocationdashboard.png)
