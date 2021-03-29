@@ -327,22 +327,25 @@ def add_registrant_onevent(dry, file, meeting_id):
     with open(file, 'r') as reader:
         lines = reader.readlines()
 
-    logger2 = helper.getFileLogger("sailing-club.log")
+    logger2 = helper.getFileLogger("sailing-club.log", "registrants")
     zoomapi = ZoomAPIClient(ZOOM_API_CLIENT, ZOOM_API_SECRET, ZOOM_BASE_URL)
    
     for line in lines:
         arr = line.split(',')
         data = {
             'auto_approve': False,
-            'email': arr[3].strip(),
-            'first_name': arr[1],
-            'last_name': arr[2] 
+            'email': arr[2].strip(),
+            'first_name': arr[0],
+            'last_name': arr[1] 
         }
         print(data)
-        res = zoomapi.add_registrant_meeting(meeting_id,**data)
-        print(res)
-        logger2.info("Email: {} Surname: {}".format(arr[3].strip(), arr[2]))
-        logger2.info(res)
+        if not dry:
+            res = zoomapi.add_registrant_meeting(meeting_id,**data)
+            print(res)
+            logger2.info("Email: {} Surname: {}".format(arr[2].strip(), arr[1]))
+            logger2.info(res)
+        else:
+            logger2.info("Email: {} Surname: {}".format(arr[2].strip(), arr[1]))
 
 def _get_registrants(zoom, meeting, data):
     """
@@ -365,13 +368,12 @@ def _get_registrants(zoom, meeting, data):
     
 
 @click.command()
-@click.option("--dry", help='Just output operations without doing it', is_flag=True)
 @click.option("--meeting_id", help='meeting id to do operations on')
 @with_appcontext
-def list_registrants_onevent(dry, meeting_id):
+def list_registrants_onevent(meeting_id):
     logger.info("Starting script")
     
-    logger2 = helper.getFileLogger("sailing-club-registrants.log")
+    logger2 = helper.getFileLogger("sailing-club-registrants.log", "listregistrants")
     zoomapi = ZoomAPIClient(ZOOM_API_CLIENT, ZOOM_API_SECRET, ZOOM_BASE_URL)
    
     data = {
