@@ -152,7 +152,7 @@ output.logstash:
 # "publish", "service".
 #logging.selectors: ["*"]
 
-logging.level: info
+logging.level: error
 logging.to_files: true
 logging.files:
   path: /var/log/zoom-dashboard
