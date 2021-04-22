@@ -18,8 +18,8 @@ filebeat.inputs:
 - type: log
   ignore_older: 1h
   tail_files: true
-  close_inactive: 5m
-  close_renamed: true
+  close_inactive: 2h
+  close_renamed: false
   close_removed: true
   exclude_lines: ["^#"]
   clean_removed: false
@@ -32,8 +32,8 @@ filebeat.inputs:
 - type: log
   ignore_older: 30m
   tail_files: true
-  close_inactive: 5m
-  close_renamed: true
+  close_inactive: 2h
+  close_renamed: false
   close_removed: true
   exclude_lines: ["^#"]
   clean_removed: false
@@ -46,8 +46,8 @@ filebeat.inputs:
 - type: log
   ignore_older: 1h
   tail_files: true
-  close_inactive: 5m
-  close_renamed: true
+  close_inactive: 2h
+  close_renamed: false
   close_removed: true
   exclude_lines: ["^#"]
   clean_removed: false

@@ -2,7 +2,7 @@
 
 pids=()
 
-echo flask live-events --debug --meeting --past  --interval 30 
+echo flask live-events --debug --meeting --past  --interval 10 
 flask live-events --debug --meeting --past  --interval 10 &
 pids[0]=$!
 sleep $((1 + $RANDOM % 120))
@@ -14,7 +14,7 @@ echo flask live-events --debug  --interval 2
 flask live-events --debug   --interval 2 &
 pids[2]=$!
 sleep $((1 + $RANDOM % 120))
-echo flask live-events --debug  --past  --interval 45 
+echo flask live-events --debug  --past  --interval 15
 flask live-events --debug  --past  --interval 15 &
 pids[3]=$!
 
