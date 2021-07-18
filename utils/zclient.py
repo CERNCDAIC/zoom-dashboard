@@ -155,14 +155,51 @@ class MeetingComponent(BaseComponent):
         return self.session.get(
             "{}/meetings/{}/registrants".format(self.base_uri, kwargs.get("meeting_id")),
             params=kwargs,
-        )    
-    
+        )  
+
+class WebinarComponent(BaseComponent):
+    def get_webinar_details(self, **kwargs):
+        _require_keys(kwargs, "webinarid")
+        return self.session.get(
+            "{}/webinars/{}".format(self.base_uri, kwargs.get("webinarid")),
+            params=kwargs,
+        )  
+
+class UserComponent(BaseComponent):
+    def get(self, **kwargs):
+        _require_keys(kwargs, "id")
+        return self.session.get(
+            "{}/users/{}/settings".format(self.base_uri, kwargs.get("id")),
+            params=kwargs,
+        )  
+    def get_settings(self, **kwargs):
+        _require_keys(kwargs, "id")
+        return self.session.get(
+            "{}/users/{}/settings".format(self.base_uri, kwargs.pop("id")),
+            params=kwargs,
+        )  
+    def update_settings(self, **kwargs):
+        _require_keys(kwargs, "id")
+        return self.session.patch(
+            "{}/users/{}/settings".format(self.base_uri, kwargs.pop("id")),
+            json=kwargs,
+        ) 
+    def get_webinars(self, **kwargs):
+        _require_keys(kwargs, "id")
+        return self.session.get(
+            "{}/users/{}/webinars".format(self.base_uri, kwargs.pop("id")),
+            json=kwargs,
+        )
+
+
 class ZoomClient(object):
     """Zoom REST API Python Client."""
 
     _components = {
         'metrics': MetricsComponent,
         'meeting': MeetingComponent,
+        'user': UserComponent,
+        'webinar': WebinarComponent,
     }
 
     def __init__(self, api_key, api_secret, base_url, timeout=15):
@@ -193,9 +230,19 @@ class ZoomClient(object):
 
     @property
     def meeting(self):
-        """Get the metrics component."""
+        """Get the meeting component."""
         return self.components.get("meeting")
+
+    @property
+    def user(self):
+        """Get the user component."""
+        return self.components.get("user")
     
+    @property
+    def webinar(self):
+        """Get the webinar component."""
+        return self.components.get("webinar")
+
 class ZoomAPIClient(object):
     def __init__(self, api_client, api_key, base_url):
         self.client = ZoomClient(
@@ -228,6 +275,14 @@ class ZoomAPIClient(object):
 
     def add_registrant_meeting(self, meeting_id, **kwargs):
         return _handle_response(self.client.meeting.add_registrant_meeting(meeting_id, **kwargs), 201)    
+    
+    def set_webinar_addon(self,  **kwargs):
+        return _handle_response(self.client.user.update_settings(**kwargs), 204, expects_json=False)
 
+    def list_user_webinars(self,  **kwargs):
+        return _handle_response(self.client.user.get_webinars(**kwargs), 200, expects_json=True)
+
+    def get_webinar_details(self, **kwargs):
+        return _handle_response(self.client.webinar.get_webinar_details(**kwargs), 200, expects_json=True)
 
 

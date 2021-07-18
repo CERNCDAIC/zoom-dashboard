@@ -16,46 +16,54 @@ filebeat.inputs:
 # Below are the prospector specific configurations.
 
 - type: log
-  ignore_older: 1h
+  ignore_older: 72h
   tail_files: true
-  close_inactive: 2h
+  close_inactive: 26h
   close_renamed: false
   close_removed: true
   exclude_lines: ["^#"]
-  clean_removed: false
+  clean_removed: true
+  clean_inactive: 73h
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
-    - /var/log/zoom-dashboard/zoom-*pasticipants.log*
-  fields:  
-    document_type: zparticipants 
+    - /var/log/zoom-dashboard/zoom-webinars-pasticipants.log
+    - /var/log/zoom-dashboard/zoom-meetings-pasticipants.log
+  fields:
+    document_type: zparticipants
 
 - type: log
-  ignore_older: 30m
+  ignore_older: 72h
   tail_files: true
-  close_inactive: 2h
+  close_inactive: 26h
   close_renamed: false
   close_removed: true
   exclude_lines: ["^#"]
-  clean_removed: false
+  clean_removed: true
+  clean_inactive: 73h
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
-    - /var/log/zoom-dashboard/zoom-*live.log*
-  fields:  
+    - /var/log/zoom-dashboard/zoom-meetings-live.log
+    - /var/log/zoom-dashboard/zoom-webinars-live.log
+  fields:
     document_type: aggrzeventslive
 
+
 - type: log
-  ignore_older: 1h
+  ignore_older: 72h
   tail_files: true
-  close_inactive: 2h
+  close_inactive: 26h
   close_renamed: false
   close_removed: true
   exclude_lines: ["^#"]
-  clean_removed: false
+  clean_removed: true
+  clean_inactive: 73h
   # Paths that should be crawled and fetched. Glob based paths.
   paths:
-    - /var/log/zoom-dashboard/zoom-*past.log*
-  fields:  
+    - /var/log/zoom-dashboard/zoom-meetings-past.log
+    - /var/log/zoom-dashboard/zoom-webinars-past.log
+  fields:
     document_type: zeventspast
+
 
     #- c:\programdata\elasticsearch\logs\*
 
@@ -152,13 +160,13 @@ output.logstash:
 # "publish", "service".
 #logging.selectors: ["*"]
 
-logging.level: error
-logging.to_files: true
-logging.files:
-  path: /var/log/zoom-dashboard
-  name: filebeat
-  keepfiles: 7
-  permissions: 0644
+logging.level: info
+#logging.to_files: true
+#logging.files:
+#  path: /var/log/zoom-dashboard
+#  name: filebeat
+#  keepfiles: 7
+# permissions: 0644
 
 #========================= Filebeat global options ============================
 

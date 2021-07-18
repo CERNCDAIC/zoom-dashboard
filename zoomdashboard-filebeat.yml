@@ -43,10 +43,22 @@ spec:
     spec:
       securityContext:
         runAsUser: 0
+      hostNetwork: true
       containers:
       - name: filebeats
         image: docker.elastic.co/beats/filebeat:7.11.1
         command: ["filebeat", "-e", "-strict.perms=false", "-c", "/etc/zoom-dashboard/filebeat.yml"]
+        terminationMessagePolicy: FallbackToLogsOnError
+        livenessProbe:
+            exec:
+              command:
+                - bash
+                - '-c'
+                - ping -c 3 logstash-icapps.cern.ch
+            failureThreshold: 3
+            periodSeconds: 10
+            successThreshold: 1
+            timeoutSeconds: 30
         volumeMounts:
           - mountPath: /etc/grid-security
             name: etc-grid-security

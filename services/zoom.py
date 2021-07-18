@@ -1,10 +1,8 @@
 import datetime
 import logging
-import os
 import time
 import json
 import re
-import sys
 import traceback
 
 import requests
@@ -44,7 +42,7 @@ def _get_live_events(zoom, meeting, data):
                     time.sleep(120)
                     logger.warn("We need to go sleep as going above 10 calls")
                 data["next_page_token"] = res["next_page_token"]
-                res = zoom.list_meetings(**data)
+                res = zoom.list_webinars(**data)
                 events.extend(res["webinars"])
                 counter += 1
     except requests.exceptions.HTTPError as ex: 
@@ -383,4 +381,5 @@ def list_registrants_onevent(meeting_id):
     res = _get_registrants(zoomapi, meeting_id, data=data)
     print(res)
     logger2.info(json.dumps(res))
+
 

@@ -43,10 +43,22 @@ spec:
     spec:
       securityContext:
         runAsUser: 0
+      hostNetwork: true
       containers:
       - name: zoom-dashboard
         image: gitlab-registry.cern.ch/videoconference/zoom-dashboard:latest
         command: ["/app/dispatch_collectors.sh"]
+        terminationMessagePolicy: FallbackToLogsOnError
+        livenessProbe:
+            exec:
+              command:
+                - bash
+                - '-c'
+                - '[ $(date +%s -r /var/log/zoom-dashboard/zoom-meetings-live.log) -gt $(date +%s --date="60 min ago") ]'
+            failureThreshold: 3
+            periodSeconds: 120
+            successThreshold: 1
+            timeoutSeconds: 30
         volumeMounts:
           - mountPath: /var/log/zoom-dashboard
             name: zoomdata
